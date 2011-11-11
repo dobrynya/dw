@@ -28,6 +28,14 @@ public class DirectoryWorm implements Scanner {
         this.parsers = parsers;
     }
 
+    public DirectoryWorm(File output, ParameterParser... parsers) throws FileNotFoundException {
+        this(new FileOutputStream(output), parsers);
+    }
+
+    public DirectoryWorm(String output, ParameterParser... parsers) throws FileNotFoundException {
+        this(new File(output), parsers);
+    }
+
     public Scanner configure(String[] parameters) {
         for (String parameter : parameters) if (!parseParameter(parameter))
             throw new IllegalArgumentException(format("Could not parse parameter: %s!", parameter));

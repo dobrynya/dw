@@ -26,5 +26,7 @@ public class DirectoryNameParserTest {
         verify(s).directory(f);
         assertFalse(p.parse("non-existent directory", s));
         verifyZeroInteractions(s);
+        assertFalse(p.parse("pom.xml", s));
+        verifyZeroInteractions(s);
     }
 }

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Реализация сканнера.

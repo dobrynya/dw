@@ -91,9 +91,10 @@ public class DirectoryWorm implements Scanner {
     }
 
     private static class Indicator extends TimerTask {
+        long count;
         public void run() {
-            if (currentTimeMillis() % 60000  == 0) System.out.print('|');
-            else if (currentTimeMillis() % 6000 == 0) System.out.print('.');
+            if (count > 0 && count % 60  == 0) System.out.print('|'); else if (count % 6 == 0) System.out.print('.');
+            count ++;
         }
     }
 }

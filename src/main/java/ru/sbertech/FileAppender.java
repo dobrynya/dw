@@ -15,7 +15,7 @@ public class FileAppender implements Appender, Comparable<FileAppender> {
     private File directory;
     private File output;
     private FileFilter filter;
-    private FileWriter writer;
+    private Writer writer;
     private Scanner scanner;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
 
@@ -26,9 +26,11 @@ public class FileAppender implements Appender, Comparable<FileAppender> {
     }
 
     public void append(File file) {
+        // нет нужды проверять файл на существование, т.к. сюда попадает при обходе директории
         try {
             if (filter.accept(file)) {
-                if (writer == null) writer = new FileWriter(output = File.createTempFile("directory_worm_", ".lst"));
+                if (writer == null) writer = new OutputStreamWriter(
+                                new FileOutputStream(output = File.createTempFile("directory_worm_", ".lst")), "UTF-8");
                 writer.write(format("[\nfile = %s\ndate = %s\nsize = %s]",
                         file.getCanonicalPath(), sdf.format(new Date(file.lastModified())), file.length()));
             }
@@ -41,10 +43,13 @@ public class FileAppender implements Appender, Comparable<FileAppender> {
     }
 
     public void close() {
-        try { if (writer != null) writer.close(); }
-        catch (Exception ignored) { /* не катастрофично, если случится ошибка при закрытии потока */
+        try {
+            if (writer != null) writer.close();
+        } catch (Exception ignored) { /* не катастрофично, если случится ошибка при закрытии writer'a */
             ignored.printStackTrace();
-        } finally { scanner.closed(this); }
+        } finally {
+            scanner.closed(this);
+        }
     }
 
     public void dump(OutputStream stream) {
@@ -55,7 +60,8 @@ public class FileAppender implements Appender, Comparable<FileAppender> {
             int readBytes;
             while ((readBytes = is.read(buffer)) > 0) stream.write(buffer, 0, readBytes);
         } catch (Exception e) {
-            throw new RuntimeException(format("Could not dump file: %s!", output));
+            e.printStackTrace();
+            throw new RuntimeException(format("Could not dump file: %s!", output), e);
         } finally {
             if (is != null) try { is.close(); }
             catch (IOException ignored) { /* не катастрофично, если случится ошибка при закрытии потока */ }
@@ -63,8 +69,9 @@ public class FileAppender implements Appender, Comparable<FileAppender> {
         }
     }
 
-    private void deleteFile() {
-        if (output != null && !output.delete()) System.out.println(format("\nFile % has not been deleted!\n", output));
+    protected void deleteFile() {
+        if (output != null && output.exists() && !output.delete())
+            System.out.println(format("\nFile %s has not been deleted!\n", output));
     }
 
     public int compareTo(FileAppender another) {

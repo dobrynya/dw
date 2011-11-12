@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Реализация сканнера.
@@ -28,7 +29,15 @@ public class DirectoryWorm implements Scanner {
         this.parsers = parsers;
     }
 
-    public Scanner configure(String[] parameters) {
+    public DirectoryWorm(File output, ParameterParser... parsers) throws FileNotFoundException {
+        this(new FileOutputStream(output), parsers);
+    }
+
+    public DirectoryWorm(String output, ParameterParser... parsers) throws FileNotFoundException {
+        this(new File(output), parsers);
+    }
+
+    public DirectoryWorm configure(String[] parameters) {
         for (String parameter : parameters) if (!parseParameter(parameter))
             throw new IllegalArgumentException(format("Could not parse parameter: %s!", parameter));
         return this;
@@ -44,14 +53,10 @@ public class DirectoryWorm implements Scanner {
     }
 
     protected void scanDirectory(File directory) {
-        Appender appender;
-        try {
-            if (directoryFilter.accept(directory)) {
-                workingAppenders.add(appender = new FileAppender(directory, fileFilter, this));
-                executor.submit(new DirectoryBrowser(directory, this, appender));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Could not start directory browser!", e);
+        if (directoryFilter.accept(directory)) {
+            Appender appender = new FileAppender(directory, fileFilter, this);
+            workingAppenders.add(appender);
+            executor.execute(new DirectoryBrowser(directory, this, appender));
         }
     }
 
@@ -72,21 +77,23 @@ public class DirectoryWorm implements Scanner {
     }
 
     protected void finish() {
-        try { for (Appender a : closedAppenders) a.dump(output); }
-        catch (Exception e) { e.printStackTrace(); }
-        finally {
-            try { output.close(); } catch (IOException ignored) {}
-            executor.shutdown();
-            timer.cancel();
-            System.out.println("\nScanning has been completed");
-        }
+        for (Appender a : closedAppenders)
+            try { a.dump(output); }
+            catch (Exception e) {
+                System.out.println("Appender failed to dump its results");
+                e.printStackTrace();
+            }
+
+        System.out.println("\nScanning has been completed");
+        executor.shutdown();
+        timer.cancel();
+        try { output.close(); } catch (IOException ignored) {}
     }
 
     private static class Indicator extends TimerTask {
-        int counter;
         public void run() {
-            counter ++;
-            if (counter % 60 == 0) System.out.print('|'); else if (counter % 6 == 0) System.out.print('.');
+            if (currentTimeMillis() % 60000  == 0) System.out.print('|');
+            else if (currentTimeMillis() % 6000 == 0) System.out.print('.');
         }
     }
 }

@@ -33,6 +33,8 @@ public class ExcludingDirectoryNameParserTest {
 
         assertFalse(p.parse("-non-existent directory", s));
         verifyZeroInteractions(s);
+        assertFalse(p.parse("-pom.xml", s));
+        verifyZeroInteractions(s);
         assertFalse(p.parse("src/main/java", s));
         verifyZeroInteractions(s);
     }

@@ -1,15 +1,13 @@
 package ru.sbertech;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.mockito.internal.util.reflection.Whitebox;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.regex.Pattern;
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.verification.VerificationMode;
-import static java.lang.String.copyValueOf;
+
 import static java.lang.String.format;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -80,8 +78,7 @@ public class FileAppenderTest {
 
         Whitebox.setInternalState(fa, "output", copy);
         ByteArrayOutputStream baos = new ByteArrayOutputStream((int) copy.length());
-        fa.dump(os);
-
+        fa.dump(baos);
         assertArrayEquals(FileUtils.readFileToByteArray(pom), baos.toByteArray());
         assertFalse(copy.exists());
     }

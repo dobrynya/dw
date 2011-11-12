@@ -1,6 +1,7 @@
 package ru.sbertech;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.TreeSet;
 
 import static java.util.Arrays.asList;
@@ -21,16 +22,17 @@ public class DirectoryBrowser implements Runnable {
         this.appender = appender;
     }
 
-    public void browse() {
+    public void run() {
         try {
             File[] files = directory.listFiles();
-            if (files != null && files.length > 0)
-                for (File f : new TreeSet<File>(asList(files)))
-                    if (f.isDirectory()) scanner.directory(f); else appender.append(f);
-        } catch (Exception e) { /* останавливаем обход */ } finally {
+            if (files != null && files.length > 0) {
+                Arrays.sort(files);
+                for (File f : files) if (f.isDirectory()) scanner.directory(f); else appender.append(f);
+            }
+        } catch (Exception e) { // прекращаем обход при ошибке
+            e.printStackTrace();
+        } finally {
             appender.close();
         }
     }
-
-    public void run() { browse(); }
 }

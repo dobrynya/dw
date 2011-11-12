@@ -45,7 +45,7 @@ public class FileAppender implements Appender, Comparable<FileAppender> {
     public void close() {
         try {
             if (writer != null) writer.close();
-        } catch (Exception ignored) { /* не катастрофично, если случится ошибка при закрытии потока */
+        } catch (Exception ignored) { /* не катастрофично, если случится ошибка при закрытии writer'a */
             ignored.printStackTrace();
         } finally {
             scanner.closed(this);

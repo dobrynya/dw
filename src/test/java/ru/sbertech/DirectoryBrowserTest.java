@@ -38,23 +38,24 @@ public class DirectoryBrowserTest {
     }
 
     @Test
-    public void testFailure1() {
+    public void testFailure() {
         File dir = mock(File.class);
         db = new DirectoryBrowser(dir, s, a);
         doThrow(new RuntimeException("Generated for testing!")).when(dir).listFiles();
         db.run();
         verify(a).close();
+        verifyZeroInteractions(a, s);
     }
 
     @Test
-    public void testFailure2() {
+    public void testEmptyDirectory() {
         File dir = mock(File.class);
         when(dir.listFiles()).thenReturn(null, new File[0]);
-        doThrow(new RuntimeException("Generated for testing!")).when(a).append(any(File.class));
-        doThrow(new RuntimeException("Generated for testing!")).when(s).directory(any(File.class));
         db = new DirectoryBrowser(dir, s, a);
         db.run();
         db.run();
+        verify(a, never()).append(any(File.class));
+        verify(s, never()).directory(any(File.class));
         verify(a, times(2)).close();
     }
 }

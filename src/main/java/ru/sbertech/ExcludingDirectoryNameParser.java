@@ -2,6 +2,7 @@ package ru.sbertech;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 
 /**
  * Запрещает сканнирование определённой директории.
@@ -15,7 +16,11 @@ public class ExcludingDirectoryNameParser implements ParameterParser {
             if (f.exists() && f.isDirectory()) {
                 scanner.directoryFilter(new FileFilter() {
                     public boolean accept(File file) {
-                        return !f.equals(file); // запретить обход директории
+                        try { return !f.getCanonicalPath().equals(file.getCanonicalPath()); }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                            return false;
+                        }
                     }
                 });
                 return true;

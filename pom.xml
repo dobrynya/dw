@@ -5,7 +5,8 @@
     <groupId>ru.sbertech</groupId>
     <artifactId>directory-worm</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Directory Worm</name>
+    <name>dw</name>
+    <description>Directory Worm</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
